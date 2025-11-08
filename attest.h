@@ -44,7 +44,7 @@ typedef struct attest_testcase
         { \
             if (!(condition)) \
             { \
-                fprintf(stderr, "[FAIL] %s:%d: ATTEST_TRUE(%s)\n", __FILE__, __LINE__, #condition); \
+                fprintf(stderr, "\033[31m[FAIL]\033[0m %s:%d: ATTEST_TRUE(%s)\n", __FILE__, __LINE__, #condition); \
                 attest_current_failed = 1; \
                 return; \
             } \
@@ -54,7 +54,7 @@ typedef struct attest_testcase
         { \
             if (!((a) == (b))) \
             { \
-                fprintf(stderr, "[FAIL] %s:%d: ATTEST_INT_EQUAL(%s, %s) - found %lld vs %lld\n", __FILE__, __LINE__, #a, #b, (long long)(a), (long long)(b)); \
+                fprintf(stderr, "\033[31m[FAIL]\033[0m %s:%d: ATTEST_INT_EQUAL(%s, %s) - found %lld vs %lld\n", __FILE__, __LINE__, #a, #b, (long long)(a), (long long)(b)); \
                 attest_current_failed = 1; \
                 return; \
             } \
@@ -64,7 +64,7 @@ typedef struct attest_testcase
         { \
             if (strcmp((a), (b)) != 0) \
             { \
-                fprintf(stderr, "[FAIL] %s:%d: ATTEST_STRING_EQUAL(%s, %s)\n", __FILE__, __LINE__, #a, #b); \
+                fprintf(stderr, "\033[31m[FAIL]\033[0m %s:%d: ATTEST_STRING_EQUAL(%s, %s)\n", __FILE__, __LINE__, #a, #b); \
                 attest_current_failed = 1; \
                 return; \
             } \
@@ -74,7 +74,7 @@ typedef struct attest_testcase
         { \
             if (((a) == (b))) \
             { \
-                fprintf(stderr, "[FAIL] %s:%d: ATTEST_NOT_EQUAL(%s, %s) - found both to be equal\n", __FILE__, __LINE__, #a, #b, (long long)(a), (long long)(b)); \
+                fprintf(stderr, "\033[31m[FAIL]\033[0m %s:%d: ATTEST_NOT_EQUAL(%s, %s) - found both to be equal\n", __FILE__, __LINE__, #a, #b, (long long)(a), (long long)(b)); \
                 attest_current_failed = 1; \
                 return; \
             } \
@@ -116,7 +116,7 @@ int run_all_tests(const char* filter, int quiet)
         }
         if (!quiet)
         {
-            printf("[RUN] %s\n", t->name);
+            printf("\033[33m[RUN] %s\033[0m -> ", t->name);
         }
 
         fflush(stdout);
@@ -128,14 +128,14 @@ int run_all_tests(const char* filter, int quiet)
         {
             if (!quiet)
             {
-                printf("[PASS] %s\n", t->name);
+                printf("\033[32m[PASS]\033[0m\n");
                 
             }
             passed++;
         }
         else
         {
-            //not necessary to print FAIL because the macros already do that
+            printf("\033[31m%s failed.\033\n", t->name);     
             failed++;
             attest_current_failed = 0;
         }
@@ -143,7 +143,7 @@ int run_all_tests(const char* filter, int quiet)
     }
 
     //if at least 1 test fails then the run will return 1, otherwise 0
-    printf("\n=====Summary=====\n%d passed and %d failed / %d total\n", passed, failed, passed+failed);
+    printf("\033[34m\n=====Summary=====\033[0m\n\033[32m%d\033[0m passed and \033[31m%d\033[0m failed / \033[34m%d\033[0m total\n", passed, failed, passed+failed);
     return failed? 1 : 0;
 }
 
@@ -182,7 +182,7 @@ inline void attest_equal(const T& a, const T& b, const char* a_str, const char* 
 {
     if (!((a) == (b)))
     {
-        fprintf(stderr, "[FAIL] %s:%d: C++ ATTEST_EQUAL(%s, %s) - found %lld vs %lld\n", __FILE__, __LINE__, a_str, b_str, a, b); \
+        fprintf(stderr, "\033[31m[FAIL]\033[0m %s:%d: C++ ATTEST_EQUAL(%s, %s) - found %lld vs %lld\n", __FILE__, __LINE__, a_str, b_str, a, b); \
         attest_current_failed = 1;
     }
 }

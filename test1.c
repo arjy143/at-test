@@ -19,3 +19,9 @@ REGISTER_TEST(vec)
     std::vector<int> b{1,2,4};
     ATTEST_EQUAL(a,b);
 }
+
+REGISTER_TEST(flag)
+{
+    attest_current_failed = 0;
+    ATTEST_INT_EQUAL(2,2);
+}
