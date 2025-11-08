@@ -37,7 +37,7 @@ extern attest_testcase_t *attest_head;
 
 //basic assertion macros
 
-#define ASSERT_TRUE(condition) do \
+#define ATTEST_TRUE(condition) do \
         { \
             if (!(condition)) \
             { \
@@ -46,7 +46,7 @@ extern attest_testcase_t *attest_head;
             } \
         } while (0)
 
-#define ASSERT_EQ(a, b) do \
+#define ATTEST_EQ(a, b) do \
         { \
             if (!((a) == (b))) \
             { \
@@ -55,7 +55,7 @@ extern attest_testcase_t *attest_head;
             } \
         } while (0)
 
-#define ASSERT_STR_EQ(a, b) do \
+#define ATTEST_STR_EQ(a, b) do \
         { \
             if (strcmp((a), (b)) != 0) \
             { \
@@ -70,6 +70,8 @@ int run_all_tests(const char* filter);
 
 attest_testcase_t* attest_head = NULL;
 
+//currently it would only work on linux
+//TODO: figure out how to make it os independent
 int run_all_tests(const char* filter)
 {
     int passed = 0;
