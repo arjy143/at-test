@@ -153,7 +153,8 @@ int main(int argc, char** argv)
     //no filter by default
     const char* filter = NULL;
     int quiet = 0;
-    
+    int list_only = 0;
+
     for (int i = 1; i < argc; ++i)
     {
         if (strncmp(argv[i], "--filter=", 9) == 0)
@@ -164,8 +165,21 @@ int main(int argc, char** argv)
         {
             quiet = 1;
         }
+        else if (strncmp(argv[i], "--list", 9) == 0)
+        {
+            list_only = 1;
+        }
     }
-
+    
+    if (list_only)
+    {
+        printf("List of registered tests:\n");
+        for (attest_testcase_t* t = attest_head; t; t = t->next)
+        {
+            printf("%s\n", t->name);
+        }
+        return 0;
+    }
     return run_all_tests(filter, quiet);
 }
 

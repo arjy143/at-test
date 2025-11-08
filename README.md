@@ -8,9 +8,10 @@ DONE:
 - got it to work with c++ stl containers
 - CLI arguments like --quiet and --filter, to control what tests are run and the output
 - colours
+- More CLI arguments, e.g. to list registered tests
 
 TO DO:
-- more CLI arguments, like --list to list all registered tests
+
 - continue ensuring c++ compatibility
 - maybe add an option to get test results in json format, which could be used to make nice looking dashboards
 - eventually remove all libc dependencies - make it possible to run on bare metal on any OS. I would need to figure out how to abstract away writing to stdout.
