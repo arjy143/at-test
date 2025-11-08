@@ -68,6 +68,16 @@ typedef struct attest_testcase
             } \
         } while (0)
 
+#define ATTEST_NOT_EQUAL(a, b) do \
+        { \
+            if (((a) == (b))) \
+            { \
+                fprintf(stderr, "[FAIL] %s:%d: ASSERT_NOT_EQUAL(%s, %s) - found both to be equal\n", __FILE__, __LINE__, #a, #b, (long long)(a), (long long)(b)); \
+                attest_current_failed = 1; \
+                return; \
+            } \
+        } while (0)
+
 void attest_register(const char* name, attest_func_t func, const char* file, int line);
 int run_all_tests(const char* filter, int quiet);
 
