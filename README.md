@@ -9,10 +9,8 @@ DONE:
 - CLI arguments like --quiet and --filter, to control what tests are run and the output
 - colours
 - More CLI arguments, e.g. to list registered tests
-
+- added an option to get test results in json format, which could be used to make nice looking dashboards. Need to save this to file maybe, or redirect stdout
 
 TO DO:
-
-- maybe add an option to get test results in json format, which could be used to make nice looking dashboards
 - timing
 - eventually remove all libc dependencies - make it possible to run on bare metal on any OS. I would need to figure out how to abstract away writing to stdout.

@@ -15,7 +15,7 @@
 #endif
 
 /*  
-    Attest - a minimal unit testing framework for C and C++
+    Attest - a minimal unit testing framework for C and C++.
 */
 
 typedef void (*attest_func_t)(void);
