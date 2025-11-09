@@ -279,6 +279,52 @@ int main(int argc, char** argv)
 #ifdef __cplusplus
 
 #include <type_traits>
+#include <string>
+#include <vector>
+
+template <typename T>
+std::string attest_to_string(const T& x) 
+{
+    //memory dump
+    const unsigned char* p = reinterpret_cast<const unsigned char*>(&x);
+    std::string out = "{";
+    for (size_t i = 0; i < sizeof(x); ++i) 
+    {
+        char buf[8];
+        snprintf(buf, sizeof(buf), "%02X", p[i]);
+        out += buf;
+        if (i + 1 != sizeof(x))
+        {
+            out += " ";
+        }     
+    }
+    out += "}";
+    return out;
+}
+
+//primitive printing
+inline std::string attest_to_string(int x) { return std::to_string(x); }
+inline std::string attest_to_string(double x) { return std::to_string(x); }
+inline std::string attest_to_string(bool x) { return x ? "true" : "false"; }
+inline std::string attest_to_string(const std::string& s) { return "\"" + s + "\""; }
+
+//pretty printing vectors
+template <typename T>
+std::string attest_to_string(const std::vector<T>& v) 
+{
+    std::string out = "[";
+    for (size_t i = 0; i < v.size(); ++i) 
+    {
+        out += attest_to_string(v[i]);
+        if (i + 1 != v.size()) 
+        {
+            out += ", ";
+        }
+    }
+    out += "]";
+    return out;
+}
+
 
 //helper struct to check if == operator exists
 template <typename T, typename U>
@@ -342,7 +388,7 @@ inline void attest_equal(const T& a, const U& b,
     
     if (!is_equal)
     {
-        fprintf(stderr, "\033[31m[FAIL]\033[0m %s:%d: ATTEST_EQUAL(%s, %s) failed\n", file, line, a_str, b_str);
+        fprintf(stderr, "\033[31m[FAIL]\033[0m %s:%d: ATTEST_EQUAL(%s, %s) failed\n", file, line, attest_to_string(a).c_str(), attest_to_string(b).c_str());
         attest_current_failed = 1;
     }
 }

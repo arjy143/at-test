@@ -13,7 +13,7 @@ REGISTER_TEST(addition)
     ATTEST_EQUAL(5, 5);
     ATTEST_EQUAL(3.14, 3.14);
     ATTEST_EQUAL(true, true);
-    Point2 s1{1,2};
+    Point2 s1{1,3};
     Point2 s2{1,2};
     ATTEST_EQUAL(s1, s2);
 }
