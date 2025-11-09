@@ -50,11 +50,11 @@ typedef struct attest_testcase
             } \
         } while (0)
 
-#define ATTEST_NOT_EQUAL(a, b) do \
+#define ATTEST_FALSE(condition) do \
         { \
-            if (((a) == (b))) \
+            if ((condition)) \
             { \
-                fprintf(stderr, "\033[31m[FAIL]\033[0m %s:%d: ATTEST_NOT_EQUAL(%s, %s) - found both to be equal\n", __FILE__, __LINE__, #a, #b, (long long)(a), (long long)(b)); \
+                fprintf(stderr, "\033[31m[FAIL]\033[0m %s:%d: ATTEST_FALSE(%s)\n", __FILE__, __LINE__, #condition); \
                 attest_current_failed = 1; \
                 return; \
             } \
@@ -88,6 +88,39 @@ typedef struct attest_testcase
             if (!is_equal) \
             { \
                 fprintf(stderr, "\033[31m[FAIL]\033[0m %s:%d: ATTEST_EQUAL(%s, %s)\n", __FILE__, __LINE__, #a, #b); \
+                attest_current_failed = 1; \
+                return; \
+            } \
+        } while (0)
+
+//generic C implementation of equals check
+#define ATTEST_NOT_EQUAL(a, b) do \
+        { \
+            int is_equal = 0; \
+            if ((void*)(a) == (void*)(b)) \
+            { \
+                is_equal = 1; \
+            } \
+            else if (sizeof(a) == sizeof(char*) && sizeof(b) == sizeof(char*)) \
+            { \
+                const char* a_string = (const char*)(a); \
+                const char* b_string = (const char*)(b); \
+                if (a_string && b_string && strcmp(a_string, b_string) == 0) \
+                { \
+                    is_equal = 1; \
+                } \
+            } \
+            else if (memcmp(&(a), &(b), sizeof(a)) == 0) \
+            { \
+                is_equal = 1; \
+            } \
+            else if ((a) == (b)) \
+            { \
+                is_equal = 1; \
+            } \
+            if (is_equal) \
+            { \
+                fprintf(stderr, "\033[31m[FAIL]\033[0m %s:%d: ATTEST_NOT_EQUAL(%s, %s)\n", __FILE__, __LINE__, #a, #b); \
                 attest_current_failed = 1; \
                 return; \
             } \
@@ -272,7 +305,27 @@ inline void attest_equal(const T& a, const U& b,
         attest_current_failed = 1;
     }
 }
+
+template <typename T, typename U>
+inline void attest_not_equal(const T& a, const U& b,
+                         const char* a_str, const char* b_str,
+                         const char* file, int line)
+{
+    //should automatically deduce the types
+    bool is_equal = false;
+
+    is_equal = attest_equal_implementation(a, b);
+    
+    if (is_equal)
+    {
+        fprintf(stderr, "\033[31m[FAIL]\033[0m %s:%d: ATTEST_NOT_EQUAL(%s, %s) failed\n", file, line, a_str, b_str);
+        attest_current_failed = 1;
+    }
+}
+
 #define ATTEST_EQUAL(a, b) attest_equal(a, b, #a, #b, __FILE__, __LINE__)
+#define ATTEST_NOT_EQUAL(a, b) attest_not_equal(a, b, #a, #b, __FILE__, __LINE__)
+
 #endif
 
 #endif //ATTEST_H
