@@ -1,5 +1,5 @@
 #ifndef ATTEST_H
-#define ATEST_H
+#define ATTEST_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,6 +14,8 @@
     Attest - a minimal unit testing framework for C and C++.
 */
 
+#define ATTEST_MAX_TESTS 1024
+
 typedef void (*attest_func_t)(void);
 
 //representation of a testcase
@@ -23,17 +25,9 @@ typedef struct attest_testcase
     attest_func_t func;
     const char* file;
     int line;
-    struct attest_testcase *next;
-} attest_testcase_t;
-
-typedef struct attest_result {
-    const char* name;
-    const char* file;
-    int line;
     int passed;
-    const char* message; 
-    struct attest_result* next;
-} attest_result_t;
+
+} attest_testcase_t;
 
 //helper to find float absolute value
 static inline double float_abs(double x)
@@ -192,34 +186,27 @@ int run_all_tests(const char* filter, int quiet);
 #ifdef ATTEST_IMPLEMENTATION
 
 //below is a data structure to keep track of all tests
-static attest_testcase_t* attest_head = NULL;
-//the below linked list is for storing the results which will get output in json at the end
-static attest_result_t* attest_results_head = NULL;
+static attest_testcase_t attest_test_list[ATTEST_MAX_TESTS];
+static size_t attest_test_index = 0;
 //the below variable is used to keep track of if the current test failed
 static int attest_current_failed = 0;
 
-
-static inline void attest_add_result(const char* name, const char* file, int line, int passed, const char* message) 
-{
-    attest_result_t* r = (attest_result_t*)malloc(sizeof(attest_result_t));
-    r->name = name;
-    r->file = file;
-    r->line = line;
-    r->passed = passed;
-    r->message = message;
-    r->next = attest_results_head;
-    attest_results_head = r;
-}
-
 void attest_register(const char* name, attest_func_t func, const char* file, int line)
 {
-    attest_testcase_t* t = (attest_testcase_t*)malloc(sizeof(attest_testcase_t));
-    t-> name = name;
-    t->func = func;
-    t->file = file;
-    t->line = line;
-    t->next = attest_head;
-    attest_head = t;
+    if (attest_test_index < ATTEST_MAX_TESTS)
+    {
+        attest_test_list[attest_test_index].name = name;
+        attest_test_list[attest_test_index].func = func;
+        attest_test_list[attest_test_index].file = file;
+        attest_test_list[attest_test_index].line = line;
+        attest_test_list[attest_test_index].passed = 0;
+
+        ++attest_test_index;
+    }
+    else
+    {
+        attest_printf("Test limit reached. Increase ATTEST_MAX_TESTS.");
+    }
 }
 
 //run tests inside process itself instead of making a new one
@@ -227,21 +214,24 @@ int run_all_tests(const char* filter, int quiet)
 {
     int passed = 0;
     int failed = 0;
-    for (attest_testcase_t* t = attest_head; t; t = t->next)
+    
+    for (size_t i = 0; i < attest_test_index; ++i)
     {
-        if (filter && !strstr(t->name, filter))
+        attest_testcase_t& t = attest_test_list[i];
+
+        if (filter && !strstr(t.name, filter))
         {
             continue;     
         }
         if (!quiet)
         {
-            attest_printf("\033[33m[RUN] %s\033[0m -> ", t->name);
+            attest_printf("\033[33m[RUN] %s\033[0m -> ", t.name);
         }
 
         fflush(stdout);
 
         int before = failed;
-        t->func();
+        t.func();
 
         if (attest_current_failed == 0)
         {
@@ -251,15 +241,14 @@ int run_all_tests(const char* filter, int quiet)
                 
             }
             passed++;
-            attest_add_result(t->name, t->file, t->line, 1, "Test Passed");
-
+            t.passed = 1;
         }
         else
         {
-            attest_printf("\033[31m%s failed.\033\n", t->name);     
+            attest_printf("\033[31m%s failed.\033\n", t.name);     
             failed++;
             attest_current_failed = 0;
-            attest_add_result(t->name, t->file, t->line, 0, "Test Failed");
+            t.passed = 0;
         }
         
     }
@@ -276,24 +265,32 @@ static void attest_print_json(void)
     printf("{\n  \"summary\": {\n");
 
     // Count
-    for (attest_result_t* r = attest_results_head; r; r = r->next) 
+    for (size_t i = 0; i < attest_test_index; ++i)
     {
+        attest_testcase_t& t = attest_test_list[i];
         total++;
-        if (r->passed) passed++; else failed++;
+        if (t.passed)
+        { 
+            passed++;
+        } 
+        else
+        {
+            failed++;
+        } 
     }
 
     printf("    \"total\": %d,\n    \"passed\": %d,\n    \"failed\": %d\n  },\n", total, passed, failed);
     printf("  \"tests\": [\n");
 
-    for (attest_result_t* r = attest_results_head; r; r = r->next) 
+    for (size_t i = 0; i < attest_test_index; ++i)
     {
+        attest_testcase_t& r = attest_test_list[i];
+
         printf("    {\n");
-        printf("      \"name\": \"%s\",\n", r->name);
-        printf("      \"file\": \"%s\",\n", r->file);
-        printf("      \"line\": %d,\n", r->line);
-        printf("      \"status\": \"%s\",\n", r->passed ? "pass" : "fail");
-        printf("      \"message\": \"%s\"\n", r->message ? r->message : "");
-        printf("    }%s\n", r->next ? "," : "");
+        printf("      \"name\": \"%s\",\n", r.name);
+        printf("      \"file\": \"%s\",\n", r.file);
+        printf("      \"line\": %d,\n", r.line);
+        printf("      \"status\": \"%s\",\n", r.passed ? "pass" : "fail");
     }
 
     printf("  ]\n}\n");
@@ -331,9 +328,11 @@ int main(int argc, char** argv)
     if (list_only)
     {
         attest_printf("List of registered tests:\n");
-        for (attest_testcase_t* t = attest_head; t; t = t->next)
+        for (size_t i = 0; i < attest_test_index; ++i)
         {
-            attest_printf("%s\n", t->name);
+            attest_testcase_t& t = attest_test_list[i];
+
+            attest_printf("%s\n", t.name);
         }
         return 0;
     }

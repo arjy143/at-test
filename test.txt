@@ -10,28 +10,20 @@
       "file": "test1.c",
       "line": 10,
       "status": "pass",
-      "message": "Test Passed"
-    },
     {
       "name": "string",
       "file": "test1.c",
       "line": 21,
       "status": "pass",
-      "message": "Test Passed"
-    },
     {
       "name": "vec",
       "file": "test1.c",
       "line": 26,
       "status": "fail",
-      "message": "Test Failed"
-    },
     {
       "name": "flag",
       "file": "test1.c",
       "line": 33,
       "status": "pass",
-      "message": "Test Passed"
-    }
   ]
 }
