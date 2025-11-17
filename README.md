@@ -1,5 +1,8 @@
 # Attest
 
+[![CI](https://github.com/arjy143/Attest/actions/workflows/ci.yml/badge.svg)](https://github.com/arjy143/Attest/actions/workflows/ci.yml)
+
+
 A single header, lightweight unit testing library for C and C++. I made this because I'm too lazy to install a proper heavyweight unit testing framework for my projects. I intended for this to be super simple to drop in to projects, as well as for use in CI/CD pipelines or automated test runs.
 
 # Features
