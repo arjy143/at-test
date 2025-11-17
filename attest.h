@@ -211,8 +211,17 @@ static void attest_printf(const char* text, ...)
     } \
 } while (0)
 
+//special equals macro for structs
+#define ATTEST_STRUCT_EQUAL(a, b) do { \
+    if (compare_memory(&(a), &(b), sizeof(a)) != 0) { \
+        attest_printf("\033[31m[FAIL]\033[0m %s:%d: ATTEST_STRUCT_EQUAL(%s, %s) failed\n", \
+            __FILE__, __LINE__, #a, #b); \
+        attest_current_failed = 1; \
+        return; \
+    } \
+} while(0)
 
-//generic C implementation of equals check
+//generic C implementation of not equals check
 #define ATTEST_NOT_EQUAL(x, y) do \
 { \
     __auto_type _a = (x); \
@@ -283,9 +292,9 @@ static void attest_printf(const char* text, ...)
         attest_current_failed = 1; \
         return; \
     } \
-    if (!(abs_double((double)(_a) - (double)(_b)) <= (double)(tolerance))) \
+    if (!(float_abs((double)(_a) - (double)(_b)) <= (double)(tolerance))) \
     { \
-        attest_printf("\033[31m[FAIL]\033[0m %s:%d: ATTEST_EQUAL_WITHIN_TOLERANCE(%s, %s) failed (diff=%f)\n", __FILE__, __LINE__, #x, #y, abs_double((double)(_a) - (double)(_b))); \
+        attest_printf("\033[31m[FAIL]\033[0m %s:%d: ATTEST_EQUAL_WITHIN_TOLERANCE(%s, %s) failed (diff=%f)\n", __FILE__, __LINE__, #x, #y, float_abs((double)(_a) - (double)(_b))); \
         attest_current_failed = 1; \
         return; \
     } \
