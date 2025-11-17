@@ -160,8 +160,9 @@ static void attest_printf(const char* text, ...)
         } while (0)
 
 //generic C implementation of equals check
-#define ATTEST_EQUAL(a, b) do \
-        { \
+#define ATTEST_EQUAL(x, y) do { \
+            __autotype a = (x); \
+            __autotype b = (y); \
             int is_equal = 0; \
             if ((void*)(a) == (void*)(b)) \
             { \
@@ -193,8 +194,10 @@ static void attest_printf(const char* text, ...)
         } while (0)
 
 //generic C implementation of equals check
-#define ATTEST_NOT_EQUAL(a, b) do \
+#define ATTEST_NOT_EQUAL(x, y) do \
         { \
+            __autotype a = (x); \
+            __autotype b = (y); \
             int is_equal = 0; \
             if ((void*)(a) == (void*)(b)) \
             { \
@@ -225,7 +228,8 @@ static void attest_printf(const char* text, ...)
             } \
         } while (0)
 
-        #define ATTEST_LESS_THAN(a, b) do { \
+        #define ATTEST_LESS_THAN(x, y) do \
+        { \
     if (!((a) < (b))) { \
         attest_printf("\033[31m[FAIL]\033[0m %s:%d: ATTEST_LESS_THAN(%s, %s) failed\n", \
                 __FILE__, __LINE__, #a, #b); \
@@ -234,7 +238,10 @@ static void attest_printf(const char* text, ...)
     } \
 } while(0)
 
-#define ATTEST_GREATER_THAN(a, b) do { \
+#define ATTEST_GREATER_THAN(x, y) do \
+    { \
+    __autotype a = (x); \
+    __autotype b = (y); \
     if (!((a) > (b))) { \
         attest_printf("\033[31m[FAIL]\033[0m %s:%d: ATTEST_GREATER_THAN(%s, %s) failed\n", \
                 __FILE__, __LINE__, #a, #b); \
@@ -243,7 +250,10 @@ static void attest_printf(const char* text, ...)
     } \
 } while(0)
 
-#define ATTEST_EQUAL_WITHIN_TOLERANCE(a, b, tolerance) do { \
+#define ATTEST_EQUAL_WITHIN_TOLERANCE(x, y, tolerance) do \
+{ \
+    __autotype a = (x); \
+    __autotype b = (y); \
     if (!(abs_double((double)(a) - (double)(b)) <= (double)(tolerance))) { \
         attest_printf("\033[31m[FAIL]\033[0m %s:%d: ATTEST_EQUAL_WITHIN_TOLERANCE(%s, %s) failed\n", \
                 __FILE__, __LINE__, #a, #b); \
@@ -290,21 +300,21 @@ int run_all_tests(const char* filter, int quiet)
     
     for (size_t i = 0; i < attest_test_index; ++i)
     {
-        attest_testcase_t& t = attest_test_list[i];
+        attest_testcase_t* t = &attest_test_list[i];
 
-        if (filter && !contains(t.name, filter))
+        if (filter && !contains(t->name, filter))
         {
             continue;     
         }
         if (!quiet)
         {
-            attest_printf("\033[33m[RUN] %s\033[0m -> ", t.name);
+            attest_printf("\033[33m[RUN] %s\033[0m -> ", t->name);
         }
 
         fflush(stdout);
 
         int before = failed;
-        t.func();
+        t->func();
 
         if (attest_current_failed == 0)
         {
@@ -314,14 +324,14 @@ int run_all_tests(const char* filter, int quiet)
                 
             }
             passed++;
-            t.passed = 1;
+            t->passed = 1;
         }
         else
         {
-            attest_printf("\033[31m%s failed.\033\n", t.name);     
+            attest_printf("\033[31m%s failed->\033\n", t->name);     
             failed++;
             attest_current_failed = 0;
-            t.passed = 0;
+            t->passed = 0;
         }
         
     }
@@ -340,9 +350,9 @@ static void attest_print_json(void)
     // Count
     for (size_t i = 0; i < attest_test_index; ++i)
     {
-        attest_testcase_t& t = attest_test_list[i];
+        attest_testcase_t* t = &attest_test_list[i];
         total++;
-        if (t.passed)
+        if (t->passed)
         { 
             passed++;
         } 
@@ -357,13 +367,13 @@ static void attest_print_json(void)
 
     for (size_t i = 0; i < attest_test_index; ++i)
     {
-        attest_testcase_t& r = attest_test_list[i];
+        attest_testcase_t* r = &attest_test_list[i];
 
         printf("    {\n");
-        printf("      \"name\": \"%s\",\n", r.name);
-        printf("      \"file\": \"%s\",\n", r.file);
-        printf("      \"line\": %d,\n", r.line);
-        printf("      \"status\": \"%s\",\n", r.passed ? "pass" : "fail");
+        printf("      \"name\": \"%s\",\n", r->name);
+        printf("      \"file\": \"%s\",\n", r->file);
+        printf("      \"line\": %d,\n", r->line);
+        printf("      \"status\": \"%s\",\n", r->passed ? "pass" : "fail");
     }
 
     printf("  ]\n}\n");
@@ -403,9 +413,9 @@ int main(int argc, char** argv)
         attest_printf("List of registered tests:\n");
         for (size_t i = 0; i < attest_test_index; ++i)
         {
-            attest_testcase_t& t = attest_test_list[i];
+            attest_testcase_t* t = &attest_test_list[i];
 
-            attest_printf("%s\n", t.name);
+            attest_printf("%s\n", t->name);
         }
         return 0;
     }

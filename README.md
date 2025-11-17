@@ -40,7 +40,7 @@ REGISTER_TEST(string)
 
 6. Run `./TestSuite`. You can choose to run with command line arguments as well:
 
-![alt text](image.png)
+![alt text](/Assets/image.png)
 
 # Documentation
 
